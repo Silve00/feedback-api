@@ -1,0 +1,49 @@
+body { 
+    font-family: sans-serif; 
+    max-width: 600px; 
+    margin: 40px auto; 
+    padding: 20px; 
+    background: #f4f4f9;
+ };
+
+h1 {
+    color: #333;
+}
+
+form{
+    background: white;
+    padding:20px;
+    border: radius 8px;
+    box-shadow: 0 2px 10px rgb(0,0,0,0.1);
+};
+
+input, textarea { 
+    width: 100%; 
+    padding: 10px; 
+    margin-bottom: 10px; 
+    border: 1px solid #ddd; 
+    border-radius: 4px; 
+    box-sizing: border-box; 
+};
+
+button { 
+    background: #28a745;
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+};
+
+button:hover { 
+    background: #218838; 
+};
+   
+.feedback-card { 
+    background: white; 
+    padding: 15px; 
+    margin-top: 10px;
+    border-radius: 8px; 
+    border-left: 5px solid #28a745; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+};
