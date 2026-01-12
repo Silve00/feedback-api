@@ -34,63 +34,53 @@ mongoose.connect(dbURI)
 
 const Feedback = require('./feedback'); // Import our blueprint
 
-// The POST method means "Send/Create"
-app.post('/api/feedback', async (req, res) => {
-    try {
-        // Create a new piece of feedback using the data the user sent (req.body)
-        const newFeedback = new Feedback({
-            username: req.body.username,
-            comment: req.body.comment,
-            rating: req.body.rating
-        });
-
-        // Save it to the database
-        const savedFeedback = await newFeedback.save();
-
-        // Send a "Success" message back to the user
-        res.status(201).json(savedFeedback);
-    } catch (error) {
-        // If something goes wrong, tell the user
-        res.status(400).json({ message: error.message });
-    }
-
-    // At the very top of server.js (if not already there)
+// 1. Make sure this is at the very top of your file to allow 'fetch' to work
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
-// Inside your app.post('/api/feedback', ...)
+// ... (Your other middleware like app.use(cors()) and MongoDB connection)
+
+// 2. The Updated POST Route
 app.post('/api/feedback', async (req, res) => {
     try {
+        // Save to MongoDB first
         const newFeedback = new Feedback(req.body);
-        await newFeedback.save();
+        const savedFeedback = await newFeedback.save();
 
-        // --- DISCORD NOTIFICATION CODE ---
+        // Send Notification to Discord
         const discordUrl = process.env.DISCORD_WEBHOOK_URL;
-        
+
         if (discordUrl) {
             await fetch(discordUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    content: "🔔 **New Feedback Received!**",
+                    content: "🚀 **New Feedback Submitted!**",
                     embeds: [{
-                        title: `Message from ${req.body.username}`,
-                        description: req.body.comment,
-                        color: 5814783, // This is a nice "Blurple" color
+                        title: `User: ${req.body.username}`,
+                        description: `**Comment:** ${req.body.comment}`,
+                        color: 3447003, // A nice blue color
                         fields: [
-                            { name: "Rating", value: "⭐".repeat(req.body.rating), inline: true }
+                            { 
+                                name: "Rating", 
+                                value: "⭐".repeat(req.body.rating) || "No rating", 
+                                inline: true 
+                            }
                         ],
+                        footer: { text: "Feedback System Alert" },
                         timestamp: new Date()
                     }]
                 })
             });
+            console.log("Discord notification sent!");
+        } else {
+            console.warn("Discord Webhook URL not found in Environment Variables.");
         }
-        // ----------------------------------
 
-        res.status(201).json(newFeedback);
+        res.status(201).json(savedFeedback);
     } catch (err) {
+        console.error("Error saving feedback:", err);
         res.status(400).json({ message: err.message });
     }
-});
 });
 
 // This tells the server: "When someone visits this URL with a GET request..."
