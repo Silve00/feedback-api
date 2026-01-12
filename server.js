@@ -53,6 +53,44 @@ app.post('/api/feedback', async (req, res) => {
         // If something goes wrong, tell the user
         res.status(400).json({ message: error.message });
     }
+
+    // At the very top of server.js (if not already there)
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+// Inside your app.post('/api/feedback', ...)
+app.post('/api/feedback', async (req, res) => {
+    try {
+        const newFeedback = new Feedback(req.body);
+        await newFeedback.save();
+
+        // --- DISCORD NOTIFICATION CODE ---
+        const discordUrl = process.env.DISCORD_WEBHOOK_URL;
+        
+        if (discordUrl) {
+            await fetch(discordUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: "🔔 **New Feedback Received!**",
+                    embeds: [{
+                        title: `Message from ${req.body.username}`,
+                        description: req.body.comment,
+                        color: 5814783, // This is a nice "Blurple" color
+                        fields: [
+                            { name: "Rating", value: "⭐".repeat(req.body.rating), inline: true }
+                        ],
+                        timestamp: new Date()
+                    }]
+                })
+            });
+        }
+        // ----------------------------------
+
+        res.status(201).json(newFeedback);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
 });
 
 // This tells the server: "When someone visits this URL with a GET request..."

@@ -1,28 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name ="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feedback Viewer</title>
-    <style class="stylefeed"></style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>User Feedback</h1>
-    <div id="feedback-list">Loading...</div>
+    <h1>Leave a Review</h1>
+    
+    <form id="feedback-form">
+        <input type="text" id="username" placeholder="Your Name" required>
+        <textarea id="comment" placeholder="What do you think?" rows="3" required></textarea>
+        <input type="number" id="rating" placeholder="Rating (1-5)" min="1" max="5" required>
+        <button type="submit">Submit Feedback</button>
+    </form>
+
+    <hr>
+
+    <h1>Recent Feedback</h1>
+    <div id="feedback-list">Loading feedback...</div>
 
     <script>
-        // This is "Client-side" JavaScript
-        async function getFeedback() {
-            // // fetch is the browser's version of Postman
-            // const response = await fetch('http://localhost:3000/api/feedback');
-            // const data = await response.json();
-            data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'feedback-card'; // This applies the CSS styling
-                    div.innerHTML = `
-                            <strong>${item.username}</strong> - ${item.rating} Stars
-                            <p>${item.comment}</p>`;
-                    listDiv.appendChild(div);
+        const API_URL = 'https://feedback-api-bp6d.onrender.com/api/feedback';
+
+        const form = document.getElementById('feedback-form');
+        const listDiv = document.getElementById('feedback-list');
+
+// 1. THE POST FETCH (To send data)
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newFeedback = {
+        username: document.getElementById('username').value,
+        comment: document.getElementById('comment').value,
+        rating: document.getElementById('rating').value
+    };
+
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFeedback)
+    });
+
+    form.reset(); // Clear the form
+    getFeedback(); // Refresh the list automatically
 });
-        }
-    </script>
+
+// 2. THE GET FETCH (To see data)
+async function getFeedback() {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+    // ... your code to display data ...
+}
+   </script>
 </body>
 </html>
